@@ -28,22 +28,25 @@
 
 ## SLIDE 2 — The biological question
 
-**Title:** What drives variability in gastruloid symmetry breaking?
+**Title:** Gastruloid morphology is highly variable — and we don't know why
 
 **Body:**
-- Gastruloids under identical conditions produce a distribution of outcomes: elongated, partially elongated, and spherical
-- Two distinct sources of variability:
-  - **Intrinsic**: stochasticity in the GRN (Wnt/Nodal bistable switch fires probabilistically)
-  - **Extrinsic**: sensitivity to protocol parameters (CHIR dose, cell number, passage)
-- Distinguishing these has direct consequences for DevSim: intrinsic → add noise term; extrinsic → parameter regime shift; both → different model architecture
+- Gastruloids produced under nominally identical conditions show a wide spectrum of morphologies: elongated, partially elongated, multi-lobed, spherical, fragmented
+- This is not just a binary elongated/failed outcome — it is a **continuous morphological landscape**
+- Multiple overlapping sources:
+  - **Culture conditions**: CHIR dose, timing, cell number, cell line, passage number, media
+  - **GRN noise**: stochastic gene expression, bistable switch firing
+  - **Other signaling**: BMP, FGF, RA gradients — not all captured in DevSim
+  - **Mechanical/physical**: aggregate geometry, cell sorting dynamics, surface tension
+- The sources are not independent — CHIR dose changes the GRN operating point, which changes sensitivity to noise
 
-**Central question for this meeting:**
-> *Does the DevSim GRN topology, as currently specified, have the right wiring to generate the observed variability distribution — or are edges missing or incorrectly signed?*
+**Central question:**
+> *What determines where a gastruloid lands in morphological space — and can a minimal mechanistic model (DevSim) explain the observed distribution, or is the model missing key inputs?*
 
-**Visual:** Two bright-field images side by side — one elongated gastruloid, one spherical — from any published paper (van den Brink 2014 or Beccari 2018 are ideal). Label: "Same protocol. Same batch."
+**Visual:** A 3×3 grid of bright-field gastruloid images showing diverse morphologies — elongated, asymmetric, spherical, multi-lobed — all from the same or comparable protocol. Source: Beccari 2018 or Suppinger 2023. No labels needed; let the diversity speak.
 
 **Speaker notes:**
-> "This is the core tension. Beccari showed that even in well-controlled conditions, you get a distribution of aspect ratios — and nobody has really explained whether that distribution is a feature of the GRN itself or an artifact of pipetting variability. André, I suspect you've thought about this — I'd love to hear your intuition on which it is before I show you what the literature says."
+> "I want to be precise about what we're trying to explain. This isn't just 'why do some gastruloids elongate and others don't' — that framing makes it sound like a binary switch. The actual phenomenon is richer: you get a distribution across a morphological landscape, and that distribution shifts depending on culture conditions, noise, and presumably the GRN wiring. The question I'm building toward computationally is whether DevSim's parameter space can reproduce that landscape, or whether the model needs new biology. André, what in your experience is the dominant source of the morphological spread — protocol variation, or something intrinsic?"
 
 ---
 
@@ -197,48 +200,47 @@ Step 6 — Manual curation
 
 ## SLIDE 8 — Culture conditions
 
-**Title:** Protocol diversity across 156 papers — a confounder for GRN inference
+**Title:** Culture conditions shift the morphological landscape — not just a confounder
 
 **Body:**
-- CHIR concentrations: ranges from 3–12 µM across published protocols
+- CHIR concentrations: 3–12 µM across 156 papers (fourfold range)
 - Cell lines: mouse (v6.5, E14, CGR8), human (H9, H1, iPSC)
 - Aggregate size: 300–1000 cells per aggregate
-- **Key gap: fewer than ~15 papers report quantitative shape distributions with n ≥ 30**
-- Culture condition variation is a likely extrinsic source of variability — but has not been systematically tested
+- Harvest timepoints: 72h–168h
+- **Culture conditions are not merely a confounder — they move the system through parameter space, shifting the morphological distribution itself**
+- Suppinger 2023: systematic variation of aggregate size and CHIR timing shifts outcome frequencies
+- **Key gap: almost no paper reports a full morphological distribution (n ≥ 30) across a condition sweep in the same experiment**
+- Without this, we cannot distinguish "CHIR dose changes the mean morphology" from "CHIR dose changes the variance"
 
 **Speaker notes:**
-> "This slide is partly a caveat and partly a question. The CHIR concentration alone varies fourfold across the literature. When one paper says 'Wnt activates X' and another says 'Wnt inhibits X', they may both be right in their protocol — and this is why I didn't use culture conditions for statistical inference. André, in your lab's experience, how sensitive is the Wnt/Nodal relationship to CHIR dose?"
+> "I want to reframe this slide slightly from the version you might expect. Culture conditions aren't just noise in the dataset — they're actually part of what we're trying to model. If CHIR dose moves you from 40% elongated to 80% elongated, that's a shift in the morphological landscape, and a good model should reproduce it. The problem is that almost no paper systematically sweeps a condition and reports the full distribution. They show you the best-looking gastruloids, or representative images, or a mean. André, are there papers — published or unpublished — that actually report distributions across a condition sweep?"
 
 ---
 
 ## SLIDE 9 — The sparse data problem
 
-**Title:** How do we build a quantitative model when the field is 10 years old?
+**Title:** How do we model a continuous morphological landscape from sparse, heterogeneous data?
 
 **Body:**
 
-**The problem:**
-- 156 papers, but most report expression patterns, not causal perturbation experiments
-- High-confidence, direct perturbation observations: ~80 after filtering
-- No paper reports a shape distribution with n ≥ 50 + mechanistic perturbation in the same experiment
+**The problem has three layers:**
+1. **Literature sparsity**: 156 papers, but most report expression patterns or representative images — not morphological distributions. High-confidence perturbation observations: ~80 after filtering.
+2. **Protocol heterogeneity**: GRN observations come from different CHIR doses, cell lines, timepoints — the GRN operating point varies across papers, so apparent contradictions may both be true
+3. **Morphological underspecification**: the phenomenon we want to explain (the full shape landscape) is almost never directly measured in the same paper that reports a mechanistic perturbation
 
 **Three complementary approaches:**
 
 1. **DevSim as structural prior**
-   Use the minimal model's topology as a Bayesian prior on edge existence and sign.
-   Update only where direct experimental evidence is strong and unambiguous.
-   Advantage: avoids overfitting; preserves model interpretability.
+   Treat the minimal model's topology as a prior on GRN edge existence and sign. Update only where direct experimental evidence is strong. Advantage: avoids overfitting a 10-year-old field; keeps the model interpretable. The question is whether the prior is correctly specified — that's what the GRN extraction is testing.
 
 2. **Homotopy evaluation**
-   Ask: can DevSim's GRN be continuously deformed (parameter values only, no new edges) to match observed behavior? If yes → topology is sufficient. If no → identify which new edge resolves the discrepancy.
-   In practice: sweep α/β/GRN rate constants in DevSim; compare simulated AR distribution to published distributions.
+   Can DevSim's parameter space (α, β, GRN rates) be swept to reproduce diverse morphological outcomes — elongated, spherical, multi-lobed — without changing topology? If yes, the wiring is sufficient and variability is parametric. If no, identify the minimum new edge that recovers missing behaviors.
 
-3. **Focus inference on conflict edges**
-   The amber Wnt↔Nodal edge has maximum model-selection value.
-   A single well-designed experiment (reporter line + genetic KO, not just CHIR) resolves the GRN topology more efficiently than 20 more descriptive papers.
+3. **Cross-protocol comparison as a feature, not a bug**
+   The fact that different protocols give different morphological distributions is *data*, not noise. A model that can reproduce the distribution shift between CHIR 3 µM and CHIR 8 µM is more constrained than one fit to a single condition. Use the culture conditions table to define a multi-condition fitting target.
 
 **Speaker notes:**
-> "The honest answer is that for ABC-SMC to work well, I need shape distributions with sample sizes that don't currently exist in the literature. So I'm thinking about this in two parallel tracks: use what exists to constrain the prior and check DevSim's topology, and identify what new data would most efficiently reduce model uncertainty. That second question is really one for you — what experiment would you design to resolve the Wnt/Nodal sign?"
+> "The broadened question actually makes the modelling problem harder in one sense but more tractable in another. Harder: because I can't just fit to 'elongated vs. not elongated.' More tractable: because the variation across protocols is actually a richer constraint on the model than any single condition. If DevSim can reproduce why high CHIR gives more elongated gastruloids than low CHIR, that's a much stronger validation than just matching one distribution. The key question for this meeting is whether the data exists to do that — and whether the GRN we've extracted has the right inputs."
 
 ---
 
@@ -248,36 +250,38 @@ Step 6 — Manual curation
 
 **Body:**
 
-**Goal:** Infer posterior distributions over DevSim parameters given observed gastruloid shape distributions
+**Goal:** Infer posterior distributions over DevSim parameters given observed gastruloid morphological distributions — ideally across multiple conditions
 
 **Parameters to infer:**
-- α_oo, α_ii, α_io (adhesion — cell sorting)
+- α_oo, α_ii, α_io (adhesion — cell sorting and layer formation)
 - β_oo, β_io (chemotaxis — directed migration)
-- GRN rate constants (G1 decay rate, G2/G3 mutual inhibition strength)
+- GRN rate constants (G1 decay rate, G2/G3 mutual inhibition strength, noise amplitude)
 
-**Summary statistics:**
-- Aspect ratio distribution at 96h and 120h
-- % elongated (AR > 1.5 threshold)
-- Circularity distribution
+**Summary statistics — capturing the full morphological landscape, not just elongation:**
+- Aspect ratio distribution at 96h and 120h (shape of the histogram, not just mean)
+- Circularity distribution (distinguishes multi-lobed from smooth)
+- Coefficient of variation of AR across a population (a direct readout of variability)
+- Proportion in each morphological class: elongated / partially elongated / spherical / fragmented
+- *(If fluorescence available)*: TBXT polarity index — fraction of aggregate with posterior marker
 
 **Algorithm:**
 ```
-1. Sample parameter vector θ from prior (DevSim-informed)
-2. Run DevSim simulation → synthetic gastruloid population
-3. Compute summary statistics on synthetic population
-4. Accept θ if distance(synthetic stats, observed stats) < ε
-5. Iterate, tightening ε each generation (SMC)
-→ Output: posterior p(θ | data)
+1. Sample parameter vector θ from prior (DevSim topology + GRN literature constraints)
+2. Run DevSim simulation → synthetic population of N gastruloids
+3. Compute summary statistics vector S(sim)
+4. Compare to observed S(data) — ideally across ≥2 conditions (e.g. CHIR 3µM vs 8µM)
+5. Accept θ if distance(S(sim), S(data)) < ε
+6. Iterate, tightening ε each SMC generation
+→ Output: posterior p(θ | data) — where in parameter space can DevSim match the landscape?
 ```
 
-**Current bottleneck:** Need morphological measurements from ≥50 gastruloids per condition as the observed target
+**Multi-condition fitting** is the key advance over naive single-condition ABC:
+a model that reproduces the morphological distribution under two different CHIR doses simultaneously is much more constrained, and more biologically meaningful
 
-**Questions for André:**
-- Does your lab have unpublished AR distributions?
-- Which published paper has the most reliable quantitative shape data?
+**Current bottleneck:** Morphological measurements from ≥50 gastruloids per condition, at ≥2 conditions
 
 **Speaker notes:**
-> "ABC-SMC doesn't require likelihood evaluation — it just needs to run the model and compare outputs to data. The main bottleneck isn't computational, it's data: I need a real shape distribution to fit to. The literature mostly shows representative images, not distributions. If you have measurements sitting in a lab notebook somewhere, or know of a paper I've missed, that would unlock this whole approach."
+> "The important change here from standard ABC is the summary statistics. If I just use 'aspect ratio mean,' I'm throwing away most of the information. The shape of the distribution — is it bimodal? skewed? does the variance increase with CHIR? — is actually what discriminates between model variants. A noise-driven model gives a unimodal distribution with high variance; a bistable model gives a bimodal distribution. Those are different, and the summary statistics have to capture that difference. The second key point is multi-condition fitting: if the model can reproduce what happens under two CHIR doses, not just one, the parameter posterior is much narrower."
 
 ---
 
@@ -287,22 +291,27 @@ Step 6 — Manual curation
 
 **Body:**
 
+**On the morphological landscape:**
+- What morphological classes do you actually observe in practice? Is it a continuum or are there discrete attractors?
+- Is the variability you see dominated by between-batch differences (protocol) or within-batch differences (intrinsic noise)?
+- Does morphological outcome correlate with early reporter dynamics — e.g. can you predict the final shape from TBXT/Wnt expression at 48h?
+
 **On ground truth:**
-- Which 5 papers do you consider mechanistically most reliable? *(to anchor high-confidence GRN curation)*
+- Which 5 papers do you consider most mechanistically reliable for GRN wiring? *(to anchor manual curation)*
 - Are there key papers missing from this corpus of 156?
-- How do you read the Massey 2019 vs. Dias 2025 Wnt/Nodal discrepancy?
+- How do you read the Massey 2019 vs. Dias 2025 Wnt/Nodal discrepancy — protocol difference, or genuine biological context-dependence?
 
-**On experimental design:**
-- What single experiment would most efficiently resolve the GRN topology?
-- Does your lab have quantitative shape distributions (n ≥ 30) that could serve as ABC targets?
-- Is CHIR variation a genuine perturbation or a confounder? *(for deciding whether to include it in inference)*
+**On data availability:**
+- Does your lab have quantitative morphological distributions (n ≥ 30) at ≥2 CHIR doses? *(This is the single highest-value dataset for ABC-SMC)*
+- Are there unpublished condition sweeps — aggregate size, CHIR timing — that haven't made it into a paper yet?
 
-**On the DevSim model:**
+**On model scope:**
 - Is the G1 → G2/G3 timer wiring biologically motivated, or a modeling convenience?
-- Which unmapped edges (FGF/BMP, RA, YAP1) do you think matter most for variability?
+- Which signaling axes not currently in DevSim (FGF, BMP, RA, YAP1/mechanosensing) do you think are most important for explaining morphological diversity — not just elongation, but the full spectrum?
+- Is there a 'worst case' morphological phenotype — something the field has observed that no current model can explain?
 
 **Speaker notes:**
-> "I've been deliberately saving these questions rather than answering them computationally, because they need biological judgment. The tool is only as good as the ground truth it's anchored to — and that's what you can provide."
+> "I've structured these questions in three tiers deliberately. The first tier — what is the phenomenon — is actually the most important and most underspecified in the literature. If we don't agree on what we're trying to explain, we can't agree on what a good model looks like. The second tier gets at data: the single most useful thing that could come from this conversation is knowing whether a multi-condition morphological distribution already exists somewhere. The third tier is about model scope — and I want your biological intuition on which missing edges would actually change the outcome distribution, versus which are real but second-order."
 
 ---
 
@@ -335,9 +344,9 @@ Step 6 — Manual curation
 
 ## Appendix: Additional Gemini image generation prompts
 
-### A. Gastruloid biology intro image (Slide 2)
+### A. Gastruloid morphological landscape image (Slide 2)
 
-> "Create a scientific illustration showing gastruloid variability for an academic presentation slide. Show a row of 6–8 gastruloid cross-sections at the same scale with varying morphologies: 2 clearly elongated (aspect ratio ~2.5, with a visible anterior-posterior axis marked by a blue-to-red color gradient), 3 intermediate (partially elongated, irregular), and 2 spherical. Each shape should have a faint cell-boundary texture. Use a dark background. Include a small axis label below the elongated ones ('anterior' on the left in blue, 'posterior' on the right in red). Style: clean, Nature Cell Biology figure, no text except the axis labels. Do not include cartoon faces or stylized art."
+> "Create a scientific illustration for an academic presentation slide showing the full spectrum of gastruloid morphological variability — not just elongated vs. spherical, but a continuum. Arrange 9–12 gastruloid shapes in a loose grid or arc, roughly ordered from most to least morphologically complex. Include: 2 clearly elongated with distinct AP axis (aspect ratio ~2.5, blue-to-red anterior-posterior gradient, slightly tapered posterior end), 2 partially elongated with irregular or asymmetric shape, 2 with a multi-lobed or bifurcated morphology, 2 compact but slightly asymmetric, and 2 spherical. Each shape should have a subtle cell-boundary texture and a semi-transparent surface. All shapes at the same scale. Dark background (#1a1a2e). No text labels. Style: Nature Cell Biology figure panel, clean, no cartoonish features, no faces. Do not show any scale bar or axes."
 
 ### B. ABC-SMC schematic (Slide 10)
 
