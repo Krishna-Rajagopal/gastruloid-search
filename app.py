@@ -493,7 +493,7 @@ with tab_papers:
 
         st.divider()
         csv_bytes = filtered.to_csv(index=False).encode("utf-8")
-        st.download_button("⬇️ Download filtered results as CSV", data=csv_bytes,
+        st.download_button("Download filtered results as CSV", data=csv_bytes,
                            file_name="gastruloid_filtered.csv", mime="text/csv")
 
     st.divider()
@@ -510,7 +510,7 @@ with tab_papers:
         st.bar_chart(chart_df)
 
     st.divider()
-    with st.expander("📖 Field definitions"):
+    with st.expander("Field definitions"):
         st.markdown("""
 | Field | Description |
 |---|---|
@@ -536,7 +536,7 @@ with tab_obs:
     else:
         odf = obs_df.copy()
 
-        with st.expander("🔍 Filters", expanded=True):
+        with st.expander("Filters", expanded=True):
             fcol1, fcol2, fcol3, fcol4, fcol5 = st.columns(5)
             sel_entity  = fcol1.selectbox("Entity (A)", ["All"] + sorted(odf["entity_a"].dropna().unique()), key="obs_entity")
             sel_rel     = fcol2.selectbox("Relationship", ["All"] + sorted(odf["relationship"].dropna().unique()), key="obs_rel")
@@ -594,11 +594,11 @@ with tab_obs:
 
         st.divider()
         obs_csv = filt.to_csv(index=False).encode("utf-8")
-        st.download_button("⬇️ Download filtered observations as CSV", data=obs_csv,
+        st.download_button("Download filtered observations as CSV", data=obs_csv,
                            file_name="gastruloid_observations_filtered.csv", mime="text/csv")
 
         st.divider()
-        with st.expander("📖 Field definitions"):
+        with st.expander("Field definitions"):
             st.markdown("""
 | Field | Description |
 |---|---|
@@ -704,7 +704,7 @@ with tab_grn:
         st.divider()
 
         # ── Data tables (collapsed by default) ───────────────────────────────
-        with st.expander("📊 Evidence by entity — manipulation paper counts"):
+        with st.expander("Evidence by entity — manipulation paper counts"):
             st.caption(
                 "How many independent papers have experimental manipulation evidence per entity. "
                 "Genetic KO with controls > pharmacological inhibitor > dose titration."
@@ -724,7 +724,7 @@ with tab_grn:
             .sort_values("papers", ascending=False)
         )
 
-        with st.expander("🔗 Full observation triplets (A · relationship · B)"):
+        with st.expander("Full observation triplets (A · relationship · B)"):
             st.caption(
                 "Each row is a unique (A, relationship, B) triplet. Low counts are expected — "
                 "each paper uses its own wording. Use the entity table for aggregate claims."
@@ -761,7 +761,7 @@ with tab_grn:
             .sort_values("flagged_obs", ascending=False)
         )
         if not ft_papers.empty:
-            with st.expander(f"📄 Papers flagged for full-text review ({len(ft_papers)})"):
+            with st.expander(f"Papers flagged for full-text review ({len(ft_papers)})"):
                 st.dataframe(
                     ft_papers.rename(columns={
                         "pmid": "PMID", "title": "Title", "species": "Species",
@@ -770,7 +770,7 @@ with tab_grn:
                     use_container_width=True,
                 )
 
-        with st.expander("🔬 Protocol diversity for manipulation evidence"):
+        with st.expander("Protocol diversity for manipulation evidence"):
             st.caption(
                 "CHIR concentrations and cell lines across papers supporting each entity. "
                 "Evidence spanning diverse protocols is more robust. "
@@ -803,7 +803,7 @@ with tab_grn:
             else:
                 st.info("Run `python3 extract_uniform.py` first.")
 
-        with st.expander("ℹ️ Data provenance — entity normalization"):
+        with st.expander("Data provenance — entity normalization"):
             st.markdown(
                 "Entity names canonicalized by `normalize_entities.py`. "
                 "Synonyms collapsed — e.g. `WNT`, `Wnt signaling`, `Wnt activation` → `Wnt`. "
@@ -811,7 +811,7 @@ with tab_grn:
                 "**Paper counts = distinct PMIDs**, not independent replications."
             )
 
-        with st.expander("📖 Field definitions"):
+        with st.expander("Field definitions"):
             st.markdown("""
 | Field | Description |
 |---|---|
@@ -966,7 +966,7 @@ with tab_ext:
             f_note = cr2.text_input("manual_note (source / figure reference)",
                                      value=str(target_row.get("manual_note", "")))
 
-            submitted = st.form_submit_button("💾 Save changes to this row")
+            submitted = st.form_submit_button("Save changes to this row")
 
         if submitted:
             working_df = get_ext_df()
@@ -1068,12 +1068,12 @@ with tab_ext:
 
     st.divider()
     dl_csv = filt.to_csv(index=False).encode("utf-8")
-    st.download_button("⬇️ Download filtered extraction table as CSV",
+    st.download_button("Download filtered extraction table as CSV",
                         data=dl_csv, file_name="gastruloid_extraction_filtered.csv",
                         mime="text/csv")
 
     st.divider()
-    with st.expander("📖 Field definitions"):
+    with st.expander("Field definitions"):
         st.markdown("""
 | Field | Description |
 |---|---|
@@ -1174,7 +1174,7 @@ with tab_curate:
         )
 
         save_col, msg_col = st.columns([1, 3])
-        if save_col.button("💾 Save changes", key="curate_save_btn"):
+        if save_col.button("Save changes", key="curate_save_btn"):
             full_obs = pd.read_csv(OBSERVATIONS_CSV)
             # Drop old rows for this paper and replace with edited rows
             full_obs = full_obs[full_obs["pmid"] != sel_pmid]
@@ -1222,7 +1222,7 @@ with tab_curate:
                                 format_func=lambda p: pmid_labels.get(p, str(p)),
                                 key="curate_add_pmid")
 
-        submitted = st.form_submit_button("➕ Add observation")
+        submitted = st.form_submit_button("Add observation")
         if submitted:
             if not new_entity_a.strip() or not new_entity_b.strip():
                 st.error("Entity A and Entity B are required.")
@@ -1258,7 +1258,7 @@ with tab_curate:
     st.divider()
 
     # ── Section 3: Unverified AI observations ────────────────────────────────
-    with st.expander("📋 All unverified AI observations (reviewed=False)"):
+    with st.expander("All unverified AI observations (reviewed=False)"):
         unverified = odf_cur[odf_cur["reviewed"] == False]
         st.caption(
             f"{len(unverified)} observations have not been manually verified. "
