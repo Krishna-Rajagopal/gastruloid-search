@@ -77,16 +77,19 @@ Manual curation          11 obs
 |---|---|---|---|
 | **GRN topology** | Wnt (G2) ⊣ Nodal (G3) | β-catenin ⊣ SMAD2/3 | ⚠️ conflicting: 1 inh (Dias 2025) / 1 act (Massey 2019) |
 | **GRN topology** | Nodal (G3) ⊣ Wnt (G2) | SMAD2/3 ⊣ β-catenin | ⚠️ conflicting: same two papers |
-| **GRN topology** | G1 → Wnt/Nodal onset | TBXT (Brachyury) gates posterior competence | indirect support ~6 papers; G1/G2 not fully independent |
+| **GRN topology** | G1 → Wnt/Nodal onset | **CHIR pulse** (most likely) — exogenous GSK3β inhibitor that decays; upstream candidates in GRN: OTX2, TGF-β, BMP (all shown activating Wnt, but likely bidirectional in reality) | no CHIR = spheroids only; G1 is probably the CHIR stimulus itself |
 | **GRN — downstream** | Wnt → TBXT | β-catenin → Brachyury | ✓ strongly supported ~12 papers |
 | **GRN — downstream** | BMP → posterior identity | BMP4 → CDX2/posterior | ✓ moderate ~7 papers |
-| **Physical (α)** | α_oo, α_ii, α_io | outer/inner cell adhesion — layer formation | not directly constrained by GRN literature |
-| **Physical (β)** | β_oo, β_io | outer/inner chemotaxis — directed movement | not directly constrained by GRN literature |
+| **Physical (α)** | α_oo, α_ii, α_io | outer/inner cell adhesion — layer formation | not constrained by GRN literature |
+| **Physical (β)** | β_oo, β_io | outer/inner chemotaxis — directed movement | not constrained by GRN literature |
 | **Unmapped** | FGF ↔ BMP | FGF8 ↔ BMP4 crosstalk | ~5 papers; absent from DevSim |
-| **Unmapped** | Retinoic acid → anterior | RA gradient → OTX2/anterior | ~4 papers; absent from DevSim |
+| **Unmapped** | Retinoic acid → anterior | RA → OTX2/anterior | ~4 papers; absent from DevSim |
+| **Alternative pathway** | SUMOylation inhibition → elongation | hypoSUMOylation drives CHIR-independent morphogenesis | Traboulsi 2023 (in corpus); alternate GRN entry point |
 
 **Speaker notes:**
-> "I've split the parameters into three categories deliberately. The physical parameters — α and β — govern cell sorting and movement, and the GRN literature doesn't constrain them directly; those have to come from morphological data. The GRN topology parameters are what this tool addresses: which edges exist and what sign they are. The downstream edges — Wnt→TBXT, BMP→posterior — are well-supported and I'd treat them as fixed in any model. The G2/G3 mutual inhibition is the central unresolved question: DevSim assumes inhibition, Massey 2019 describes activation or synergy, and André's 2025 paper describes inhibition. These may both be right if the relationship is context- or dose-dependent, but we can't distinguish that from the current literature. On the biological identities: G1 most naturally maps to TBXT — the transient timer gene that gates posterior competence — but there's a circularity problem because TBXT is also a Wnt target. G1 could alternatively represent the exogenous CHIR pulse itself, or the pluripotency exit clock. That's a question for André: does G1 correspond to anything biologically identifiable, or is it a modelling convenience?"
+> "The physical parameters — α and β — govern cell sorting and movement and aren't constrained by the GRN literature at all; those have to come from morphological fitting. The GRN topology is what this tool addresses. The downstream edges — Wnt→TBXT, BMP→posterior — are well-supported and I'd treat them as fixed.
+>
+> The G1 identity is worth discussing. I initially suggested TBXT, but that's wrong — the circuit diagram shows Wnt activating TBXT, so TBXT is downstream of G2, not upstream. The GRN graph does show OTX2, TGF-β, and BMP all activating Wnt, which makes them upstream G1 candidates — but these are almost certainly bidirectional relationships that appear unidirectional in our data because of experimental context. The most compelling G1 candidate is actually CHIR itself: without CHIR, gastruloids form spheroids and don't elongate, which means CHIR is the necessary initiating input. It's also a natural timer because it gets metabolised. The interesting exception is SUMOylation inhibition — Traboulsi 2023 showed that hypoSUMOylated aggregates can elongate without CHIR, which implies an alternative GRN entry point that bypasses G1 entirely and may illuminate other wiring. André, does G1 correspond to anything biologically specific in your view, or is it purely a model abstraction for the CHIR stimulus?"
 
 ---
 
@@ -112,28 +115,35 @@ Manual curation          11 obs
 
 ## SLIDE 6 — Discussion + next steps
 
-**Title:** Questions for André + where this goes next
+**Title:** Where this goes next
 
 **Body:**
 
-**Questions:**
-- Which papers do you consider ground truth for GRN wiring?
-- How do you read the Massey vs. Dias Wnt/Nodal discrepancy?
-- Does your lab have quantitative morphological distributions (n ≥ 30) across conditions?
-- Which unmapped edges (FGF, RA, YAP1) matter most for morphological variability?
-- What is the 'hardest' morphological phenotype to explain — the one no current model captures?
+**GRN ground truth**
+- Which papers anchor the wiring? → manual curation + directed full-text review of André's recommendations
+- Wnt/Nodal conflict (Massey vs. Dias): protocol artefact or genuine context-dependence?
 
-**Immediate next steps:**
-- Manual curation of high-priority GRN edges based on this conversation
-- Directed full-text review of ~10 papers André flags as authoritative
-- Extract quantitative shape data from Beccari 2018, Suppinger 2023
+**Culture conditions as model input**
+- CHIR is likely G1 — does a systematic dose-response with quantitative morphological readout exist?
+- If yes: use condition sweep to constrain DevSim parameter fitting across regimes
+- SUMOylation inhibition (Traboulsi 2023) as alternative GRN entry point — worth examining what wiring it reveals
 
-**Longer-term:**
-- Homotopy check: sweep DevSim parameters, compare simulated morphological distributions
-- Multi-condition ABC-SMC fitting if shape distribution data becomes available
+**Morphological data gap**
+- Extract shape distributions from Beccari 2018, Suppinger 2023
+- What is the hardest phenotype to explain — the one no current model captures?
+
+**Longer-term: model validation**
+- Sweep DevSim parameter space; compare simulated morphological distributions to literature
+- ABC-SMC to fit parameters to real distributions if data available
 
 **Speaker notes:**
-> "The tool is in a state where manual curation is the highest-leverage activity — the AI extraction gets us 80% of the way there efficiently, but the next increment has to come from expert judgment. The longer-term computational track — fitting DevSim parameters to morphological distributions using ABC-SMC — is only tractable once we have the right data. ABC-SMC is approximate Bayesian computation: you run the simulation many times with different parameter values, compare the output statistics to observed data, and build up a posterior distribution over parameters. It doesn't require writing down a likelihood function, which is why it's attractive for a spatial model like DevSim. But the bottleneck is data, not computation, so I'm flagging it as a possibility rather than a plan."
+> "I've organised this around three threads rather than a flat list of questions, because they're connected. The GRN thread and the culture conditions thread both feed into the model validation thread — you can't fit DevSim parameters without knowing which GRN edges to hold fixed and what morphological distributions to fit to.
+>
+> On GRN ground truth: the single most useful output from this conversation is a list of papers André considers authoritative. That directly drives what I manually curate next. The Wnt/Nodal conflict is the most pressing specific question — if André thinks it's a protocol artefact, we can resolve it by looking at CHIR concentrations across those two papers. If it's genuine context-dependence, that's a more interesting biological problem.
+>
+> On culture conditions: CHIR is almost certainly G1 in DevSim — without it, you get spheroids, not elongation. That means varying CHIR is the most direct experimental handle on G1, and a systematic dose-response with quantitative morphological readout is the single most useful experiment for model fitting. The SUMOylation paper is interesting precisely because it bypasses CHIR — it must activate Wnt or an equivalent signal through a different route, and understanding that route might reveal GRN wiring that CHIR-based experiments obscure.
+>
+> The longer-term computation — sweeping DevSim parameters and eventually ABC-SMC — is contingent on having the morphological data. I'm flagging it as the destination, not the current step."
 
 ---
 
@@ -158,4 +168,4 @@ Manual curation          11 obs
 
 ### C. DevSim GRN circuit (Slide 2, right panel)
 
-> "Create a gene regulatory network diagram for an academic presentation slide. Three labeled circle nodes, each with two lines of text: 'G1 / TBXT' in grey on the left, 'G2 / Wnt·β-cat' in blue top-right, 'G3 / Nodal·SMAD2/3' in orange bottom-right. Green arrows from G1 to both G2 and G3 (labeled 'activates'). Red blunt-ended inhibition arrows between G2 and G3 in both directions (labeled 'inhibits' — this mutual inhibition should be the most visually prominent feature). A separate smaller green arrow from G2 pointing downward to a small node labeled 'TBXT output' (labeled 'activates'), representing the Wnt→TBXT downstream edge. Dashed boundary labeled 'outer cells' around G2, dashed boundary labeled 'inner cells' around G3. Dark navy background, white text, clean sans-serif. Style: Nature Reviews Molecular Cell Biology circuit diagram."
+> "Create a gene regulatory network diagram for an academic presentation slide. Three labeled circle nodes: 'G1 / CHIR input' in grey on the left (representing the exogenous Wnt agonist that acts as a timer), 'G2 / Wnt·β-catenin' in blue top-right, 'G3 / Nodal·SMAD2/3' in orange bottom-right. Green arrows from G1 to both G2 and G3 (labeled 'activates'). Red blunt-ended inhibition arrows between G2 and G3 in both directions (labeled 'inhibits' — make this mutual inhibition the most visually prominent feature). A separate green arrow from G2 pointing down-right to a smaller node labeled 'TBXT' (labeled 'activates'), showing Wnt's downstream output. Dashed boundary labeled 'outer cells' loosely around G2, dashed boundary labeled 'inner cells' loosely around G3. Dark navy background (#1a1a2e), white text, clean sans-serif. Style: Nature Reviews Molecular Cell Biology circuit diagram."
