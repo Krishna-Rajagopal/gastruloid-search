@@ -10,7 +10,7 @@ SEARCH_QUERIES = [
     "gastruloid elongation primitive streak",
 ]
 
-YEAR_START = 2015
+YEAR_START = 2014
 YEAR_END   = 2025
 
 # ---------------------------------------------------------------------------
