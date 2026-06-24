@@ -2,3 +2,5 @@ biopython
 pandas
 streamlit
 anthropic
+networkx
+matplotlib
