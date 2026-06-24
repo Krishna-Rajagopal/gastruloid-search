@@ -71,18 +71,22 @@ Manual curation          11 obs
 - Edge color: green (consensus activating) · red (consensus inhibitory) · amber (conflicting)
 - Edge width ∝ independent papers
 
-**DevSim homology (key rows):**
+**DevSim parameter categories and literature support:**
 
-| Edge | DevSim | Literature | Status |
+| Category | Parameter / edge | Biological identity | Literature support |
 |---|---|---|---|
-| Wnt → TBXT | activates | ~12 papers | ✓ strongly supported |
-| BMP → posterior | activates | ~7 papers | ✓ moderate support |
-| Wnt ⊣ Nodal | inhibits | 1 inh / 1 act | ⚠️ conflicting |
-| Nodal ⊣ Wnt | inhibits | 1 inh / 1 act | ⚠️ conflicting |
-| FGF ↔ BMP crosstalk | absent | ~5 papers | unmapped |
+| **GRN topology** | Wnt (G2) ⊣ Nodal (G3) | β-catenin ⊣ SMAD2/3 | ⚠️ conflicting: 1 inh (Dias 2025) / 1 act (Massey 2019) |
+| **GRN topology** | Nodal (G3) ⊣ Wnt (G2) | SMAD2/3 ⊣ β-catenin | ⚠️ conflicting: same two papers |
+| **GRN topology** | G1 → Wnt/Nodal onset | TBXT (Brachyury) gates posterior competence | indirect support ~6 papers; G1/G2 not fully independent |
+| **GRN — downstream** | Wnt → TBXT | β-catenin → Brachyury | ✓ strongly supported ~12 papers |
+| **GRN — downstream** | BMP → posterior identity | BMP4 → CDX2/posterior | ✓ moderate ~7 papers |
+| **Physical (α)** | α_oo, α_ii, α_io | outer/inner cell adhesion — layer formation | not directly constrained by GRN literature |
+| **Physical (β)** | β_oo, β_io | outer/inner chemotaxis — directed movement | not directly constrained by GRN literature |
+| **Unmapped** | FGF ↔ BMP | FGF8 ↔ BMP4 crosstalk | ~5 papers; absent from DevSim |
+| **Unmapped** | Retinoic acid → anterior | RA gradient → OTX2/anterior | ~4 papers; absent from DevSim |
 
 **Speaker notes:**
-> "The most important thing on this graph is the amber Wnt↔Nodal edge. Massey 2019 describes them as synergistic — each promoting the other in the context of primitive streak specification. André's 2025 paper describes mutual inhibition — which is what DevSim also assumes. These may not be contradictory if the relationship is concentration- or context-dependent, but the literature currently can't distinguish these. That's the single highest-value question to resolve for model validation. The unmapped edges — FGF/BMP, Retinoic acid, YAP1/mechanosensing — appear in 3–5 papers each but aren't in DevSim. I don't know yet whether they matter for variability or are second-order. That's a judgment call I need from you."
+> "I've split the parameters into three categories deliberately. The physical parameters — α and β — govern cell sorting and movement, and the GRN literature doesn't constrain them directly; those have to come from morphological data. The GRN topology parameters are what this tool addresses: which edges exist and what sign they are. The downstream edges — Wnt→TBXT, BMP→posterior — are well-supported and I'd treat them as fixed in any model. The G2/G3 mutual inhibition is the central unresolved question: DevSim assumes inhibition, Massey 2019 describes activation or synergy, and André's 2025 paper describes inhibition. These may both be right if the relationship is context- or dose-dependent, but we can't distinguish that from the current literature. On the biological identities: G1 most naturally maps to TBXT — the transient timer gene that gates posterior competence — but there's a circularity problem because TBXT is also a Wnt target. G1 could alternatively represent the exogenous CHIR pulse itself, or the pluripotency exit clock. That's a question for André: does G1 correspond to anything biologically identifiable, or is it a modelling convenience?"
 
 ---
 
@@ -154,4 +158,4 @@ Manual curation          11 obs
 
 ### C. DevSim GRN circuit (Slide 2, right panel)
 
-> "Create a gene regulatory network diagram for an academic presentation slide. Three labeled circle nodes: 'G1 Timer' in grey on the left, 'G2 Wnt' in blue top-right, 'G3 Nodal' in orange bottom-right. Green arrows from G1 to both G2 and G3 (labeled 'activates'). Red blunt-ended inhibition arrows between G2 and G3 in both directions (labeled 'inhibits'). The G2↔G3 mutual inhibition should be visually prominent. Dashed boundary labeled 'outer cells' around G2, dashed boundary labeled 'inner cells' around G3. Dark navy background, white text, clean sans-serif. Style: Nature Reviews circuit diagram."
+> "Create a gene regulatory network diagram for an academic presentation slide. Three labeled circle nodes, each with two lines of text: 'G1 / TBXT' in grey on the left, 'G2 / Wnt·β-cat' in blue top-right, 'G3 / Nodal·SMAD2/3' in orange bottom-right. Green arrows from G1 to both G2 and G3 (labeled 'activates'). Red blunt-ended inhibition arrows between G2 and G3 in both directions (labeled 'inhibits' — this mutual inhibition should be the most visually prominent feature). A separate smaller green arrow from G2 pointing downward to a small node labeled 'TBXT output' (labeled 'activates'), representing the Wnt→TBXT downstream edge. Dashed boundary labeled 'outer cells' around G2, dashed boundary labeled 'inner cells' around G3. Dark navy background, white text, clean sans-serif. Style: Nature Reviews Molecular Cell Biology circuit diagram."
