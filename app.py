@@ -493,7 +493,7 @@ with tab_papers:
 
         st.divider()
         csv_bytes = filtered.to_csv(index=False).encode("utf-8")
-        st.download_button("Download filtered results as CSV", data=csv_bytes,
+        st.download_button("⬇️ Download filtered results as CSV", data=csv_bytes,
                            file_name="gastruloid_filtered.csv", mime="text/csv")
 
     st.divider()
@@ -594,7 +594,7 @@ with tab_obs:
 
         st.divider()
         obs_csv = filt.to_csv(index=False).encode("utf-8")
-        st.download_button("Download filtered observations as CSV", data=obs_csv,
+        st.download_button("⬇️ Download filtered observations as CSV", data=obs_csv,
                            file_name="gastruloid_observations_filtered.csv", mime="text/csv")
 
         st.divider()
@@ -966,7 +966,7 @@ with tab_ext:
             f_note = cr2.text_input("manual_note (source / figure reference)",
                                      value=str(target_row.get("manual_note", "")))
 
-            submitted = st.form_submit_button("Save changes to this row")
+            submitted = st.form_submit_button("💾 Save changes to this row")
 
         if submitted:
             working_df = get_ext_df()
@@ -1068,7 +1068,7 @@ with tab_ext:
 
     st.divider()
     dl_csv = filt.to_csv(index=False).encode("utf-8")
-    st.download_button("Download filtered extraction table as CSV",
+    st.download_button("⬇️ Download filtered extraction table as CSV",
                         data=dl_csv, file_name="gastruloid_extraction_filtered.csv",
                         mime="text/csv")
 
@@ -1174,7 +1174,7 @@ with tab_curate:
         )
 
         save_col, msg_col = st.columns([1, 3])
-        if save_col.button("Save changes", key="curate_save_btn"):
+        if save_col.button("💾 Save changes", key="curate_save_btn"):
             full_obs = pd.read_csv(OBSERVATIONS_CSV)
             # Drop old rows for this paper and replace with edited rows
             full_obs = full_obs[full_obs["pmid"] != sel_pmid]
