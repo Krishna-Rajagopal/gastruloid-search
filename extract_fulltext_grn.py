@@ -47,6 +47,8 @@ SCHEMA_KEYS  = [
     "needs_full_text",       # always False here (we already have full text)
     "evidence_type",         # direct | cited | review
     "figure_ref",            # e.g. "Fig. 3B" or "" if not mentioned
+    "timepoint_h",           # 48 | 72 | 96 | 120 | early | late | not_specified
+    "perturbation_type",     # genetic_KO | genetic_OE | pharmacological | morpholino | reporter | none
 ]
 
 # ---------------------------------------------------------------------------
@@ -84,7 +86,14 @@ IMPORTANT — use EXACTLY these JSON keys (no others):
   "supporting_quote":    "verbatim ≤20-word phrase from the text",
   "needs_full_text":     false,
   "evidence_type":       "direct" | "cited" | "review",
-  "figure_ref":          "Fig. 3B or empty string"
+  "figure_ref":          "Fig. 3B or empty string",
+  "timepoint_h":         "48" | "72" | "96" | "120" | "early" | "late" | "not_specified"
+                         — the gastruloid developmental hour when the observation was made,
+  "perturbation_type":   "genetic_KO" | "genetic_OE" | "pharmacological" | "morpholino" |
+                         "reporter" | "none"
+                         — for perturbation obs: genetic_KO = CRISPR/RNAi/knockout,
+                           pharmacological = drug/small molecule (CHIR, inhibitors, etc.),
+                           none = non-perturbation observation
 }
 
 Return a JSON array of such objects, or [] if nothing extractable.
@@ -248,6 +257,8 @@ def main():
                 "source":             "fulltext",
                 "evidence_type":      o.get("evidence_type", ""),
                 "figure_ref":         o.get("figure_ref", ""),
+                "timepoint_h":        o.get("timepoint_h", "not_specified"),
+                "perturbation_type":  o.get("perturbation_type", "none"),
             }
             all_rows.append(row)
 

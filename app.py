@@ -39,6 +39,9 @@ _CORE_ENTITIES = {
 }
 _ACT_RELS = {"activates", "enhances", "required_for", "rescues", "restores"}
 _INH_RELS = {"inhibits", "abolishes", "reduces"}
+_DISPUTED_EDGES = {
+    ("BMP", "Nodal"): "Not observed by Dias lab (Nodal persists in -BMP gastruloids)",
+}
 
 st.set_page_config(
     page_title="Gastruloid Literature Explorer",
@@ -100,6 +103,14 @@ def load_observations():
                 "confidence", "observation_type", "species", "devSim_param",
                 "supporting_quote"]:
         df[col] = df[col].fillna("").astype(str)
+    if "timepoint_h" not in df.columns:
+        df["timepoint_h"] = "not_specified"
+    else:
+        df["timepoint_h"] = df["timepoint_h"].fillna("not_specified").astype(str)
+    if "perturbation_type" not in df.columns:
+        df["perturbation_type"] = "none"
+    else:
+        df["perturbation_type"] = df["perturbation_type"].fillna("none").astype(str)
     return df
 
 
@@ -126,7 +137,8 @@ def _blend_color(inh_frac: float) -> str:
     return f"#{r:02x}{g:02x}{b:02x}"
 
 
-def _build_lit_grn(obs_df, species_filter="All", obs_type_filter="All", min_papers=1):
+def _build_lit_grn(obs_df, species_filter="All", obs_type_filter="All", min_papers=1,
+                   timepoint_filter="All", tier="All"):
     """Return (DiGraph, species_coverage_dict) for molecular-to-molecular edges.
 
     Edge attributes:
@@ -140,6 +152,39 @@ def _build_lit_grn(obs_df, species_filter="All", obs_type_filter="All", min_pape
         df = df[df["species"] == species_filter]
     if obs_type_filter != "All":
         df = df[df["observation_type"] == obs_type_filter]
+
+    # Tier filter based on perturbation_type
+    if tier == "Tier 1 — Genetic":
+        if "perturbation_type" in df.columns:
+            df = df[df["perturbation_type"].isin(["genetic_KO", "genetic_OE"])]
+        else:
+            df = df[df["observation_type"] == "perturbation"]
+    elif tier == "Tier 2 — All perturbation":
+        df = df[df["observation_type"] == "perturbation"]
+
+    # Timepoint filter — parse numeric values for flexible binning
+    if timepoint_filter != "All" and "timepoint_h" in df.columns:
+        def _tp_h(v):
+            try:
+                return float(v)
+            except (ValueError, TypeError):
+                return None
+
+        tp_num = df["timepoint_h"].map(_tp_h)
+        if timepoint_filter == "≤48h":
+            mask = (tp_num <= 48) | df["timepoint_h"].isin(["early"])
+            df = df[mask.fillna(False)]
+        elif timepoint_filter == "48–72h":
+            mask = ((tp_num >= 48) & (tp_num <= 72))
+            df = df[mask.fillna(False)]
+        elif timepoint_filter == "72–96h":
+            mask = ((tp_num >= 72) & (tp_num <= 96))
+            df = df[mask.fillna(False)]
+        elif timepoint_filter == "≥96h":
+            mask = (tp_num >= 96) | df["timepoint_h"].isin(["late"])
+            df = df[mask.fillna(False)]
+        elif timepoint_filter == "not specified":
+            df = df[df["timepoint_h"] == "not_specified"]
 
     df = df[
         df["entity_a"].isin(_CORE_ENTITIES) &
@@ -246,6 +291,21 @@ def _plot_lit_grn(G, sp_cov, title="Literature GRN"):
                            arrows=True, arrowsize=18,
                            connectionstyle="arc3,rad=0.15",
                            ax=ax, alpha=0.85)
+
+    # Highlight disputed edges with dashed overlay
+    disputed_present = [(u, v) for u, v in G.edges() if (u, v) in _DISPUTED_EDGES]
+    if disputed_present:
+        nx.draw_networkx_edges(
+            G, pos,
+            edgelist=disputed_present,
+            edge_color="white",
+            style="dashed",
+            width=1.5,
+            alpha=0.7,
+            arrows=False,
+            ax=ax,
+        )
+
     # Only label conflict edges (N+/M−); pure-direction edges rely on color + width
     edge_labels = {(u, v): G[u][v]["label"]
                    for u, v in G.edges() if G[u][v].get("label")}
@@ -266,7 +326,13 @@ def _plot_lit_grn(G, sp_cov, title="Literature GRN"):
         mpatches.Patch(color="#d62728", label="Edge: all inhibitory"),
         mpatches.Patch(color="#7f7f7f", label="Edge: other/unclear"),
     ]
-    ax.legend(handles=node_patches + edge_patches, loc="lower left",
+    legend_handles = node_patches + edge_patches
+    if disputed_present:
+        legend_handles.append(
+            mpatches.Patch(facecolor="none", edgecolor="white", linestyle="dashed",
+                           label="Edge: disputed (expert disagreement)")
+        )
+    ax.legend(handles=legend_handles, loc="lower left",
               fontsize=6, framealpha=0.85, ncol=2, columnspacing=0.6, handlelength=1.1)
     ax.set_title(title, fontsize=10, fontweight="bold", pad=8)
     ax.axis("off")
@@ -624,7 +690,7 @@ with tab_grn:
         odf = obs_df.copy()
 
         # ── Compact filter row ────────────────────────────────────────────────
-        _fc1, _fc2, _fc3, _fc4 = st.columns([2, 2, 3, 2])
+        _fc1, _fc2, _fc3, _fc4, _fc5 = st.columns([2, 2, 2, 2, 2])
         grn_species  = _fc1.selectbox("Species",
                                        ["All", "human", "mouse", "both", "mammalian"],
                                        key="grn_species")
@@ -632,12 +698,17 @@ with tab_grn:
                                        ["All", "perturbation", "grn_edge",
                                         "spatial_pattern", "expression_timing"],
                                        key="grn_obs_type")
-        net_obs_filter = _fc3.radio(
+        grn_tier = _fc3.selectbox(
             "Evidence tier",
-            ["Tier 1 — Experimental manipulation", "All tiers"],
-            horizontal=True, key="net_obs_type",
+            ["All", "Tier 2 — All perturbation", "Tier 1 — Genetic"],
+            key="grn_tier",
         )
-        net_min_papers = _fc4.slider("Min papers/edge", 1, 4, 1, key="net_min_papers")
+        grn_timepoint = _fc4.selectbox(
+            "Timepoint",
+            ["All", "≤48h", "48–72h", "72–96h", "≥96h", "not specified"],
+            key="grn_timepoint",
+        )
+        net_min_papers = _fc5.slider("Min papers/edge", 1, 4, 1, key="net_min_papers")
 
         grn_df = odf.copy()
         if grn_species  != "All": grn_df = grn_df[grn_df["species"] == grn_species]
@@ -671,12 +742,13 @@ with tab_grn:
         if not _GRAPH_AVAILABLE:
             st.info("Install dependencies to enable: `pip install networkx matplotlib`")
         else:
-            obs_type_arg = "perturbation" if "Tier 1" in net_obs_filter else "All"
             G_lit, sp_cov = _build_lit_grn(
                 odf,
                 species_filter=grn_species,
-                obs_type_filter=obs_type_arg,
+                obs_type_filter=grn_obs_type,
                 min_papers=net_min_papers,
+                timepoint_filter=grn_timepoint,
+                tier=grn_tier,
             )
             net_col1, net_col2 = st.columns([3, 2], gap="large")
             with net_col1:

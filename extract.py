@@ -54,6 +54,8 @@ OBS_COLUMNS = [
     "needs_full_text",         # True if quantitative backing likely in figures
     "reviewed",                # False by default; flip manually after verification
     "devSim_param",            # filled by map_devsim_param()
+    "timepoint_h",             # developmental timepoint: 48 | 72 | 96 | 120 | early | late | not_specified
+    "perturbation_type",       # genetic_KO | genetic_OE | pharmacological | morpholino | reporter | none
 ]
 
 # ---------------------------------------------------------------------------
@@ -83,6 +85,12 @@ For each observation, return a JSON object with these exact keys:
   supporting_quote: verbatim phrase from the abstract, ≤20 words
   needs_full_text: true if quantitative data (concentrations, timing, fractions) likely exists
                    in figures but is not in the abstract
+  timepoint_h: the developmental hour at which the observation was made — use "48", "72", "96",
+               "120", "early" (before 48h), "late" (after 120h), or "not_specified" if unclear
+  perturbation_type: for perturbation observations only — "genetic_KO" (CRISPR/RNAi/knockout),
+                     "genetic_OE" (overexpression/knock-in), "pharmacological" (drug/small molecule
+                     e.g. CHIR, inhibitor), "morpholino", "reporter" (reporter line only, no perturbation),
+                     or "none" for non-perturbation observations
 
 Return a JSON array. Return [] if the abstract contains no extractable observations.
 NEVER invent observations not directly supported by the text."""
