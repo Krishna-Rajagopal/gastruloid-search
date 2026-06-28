@@ -26,9 +26,9 @@ import pandas as pd
 # Configuration
 # ---------------------------------------------------------------------------
 MODEL        = "claude-haiku-4-5-20251001"   # fast + cheap; switch to sonnet-4-6 for quality
-MAX_CHARS    = 7000                            # truncation per paper (results + discussion)
-RESULTS_CAP  = 4000                            # chars taken from results section
-DISCUSS_CAP  = 3000                            # chars taken from discussion section
+RESULTS_CAP  = 3500                            # chars taken from results section
+DISCUSS_CAP  = 2500                            # chars taken from discussion section
+METHODS_CAP  = 2000                            # chars taken from methods section (timepoints)
 DELAY_S      = 0.4                             # rate limit gap between API calls
 DRY_RUN      = False                           # set True to process first 5 papers only
 
@@ -55,7 +55,7 @@ SCHEMA_KEYS  = [
 # Prompts
 # ---------------------------------------------------------------------------
 SYSTEM_PROMPT = """You are a developmental biology expert extracting structured observations
-from the Results and Discussion sections of gastruloid research papers.
+from gastruloid and mouse embryo research papers.
 
 Extract ONLY observations that are:
 1. GRN edges: one molecule/pathway activates or inhibits another
@@ -69,6 +69,16 @@ CRITICAL rules:
 - If a claim is a hypothesis or interpretation with no data, set evidence_type="review".
 - Set evidence_type="direct" ONLY when this paper's own figures/experiments support it.
 - Include figure_ref (e.g. "Fig. 3B") when mentioned near the claim.
+
+TIMEPOINT EXTRACTION — this is critical:
+- Read the METHODS section carefully for harvest/collection/fixation timepoints.
+- Common patterns: "gastruloids were harvested at 96h", "day 4 of culture" (=96h),
+  "fixed at 72h post-aggregation", "collected at 120h", "imaged at 48h".
+- Convert days to hours: day 2=48h, day 3=72h, day 4=96h, day 5=120h.
+- If a paper analyzes multiple timepoints, use the timepoint most relevant to each observation.
+- If a Methods harvest timepoint is clear, apply it to ALL observations from that paper
+  unless the Results text specifies a different timepoint for a specific experiment.
+- Use "not_specified" ONLY when no timepoint information is available anywhere in the text.
 
 Focus entities: Wnt, Nodal, BMP, FGF, Retinoic acid, TBXT, Brachyury, SOX2, SOX17,
 FOXA2, GATA6, E-cadherin, β-catenin, YAP1, ERK, SMAD2/3, CDX2, OTX2, TBX6, Snail.
@@ -88,10 +98,11 @@ IMPORTANT — use EXACTLY these JSON keys (no others):
   "evidence_type":       "direct" | "cited" | "review",
   "figure_ref":          "Fig. 3B or empty string",
   "timepoint_h":         "48" | "72" | "96" | "120" | "early" | "late" | "not_specified"
-                         — the gastruloid developmental hour when the observation was made,
+                         — use Methods harvest timepoint if Results does not specify one,
   "perturbation_type":   "genetic_KO" | "genetic_OE" | "pharmacological" | "morpholino" |
                          "reporter" | "none"
-                         — for perturbation obs: genetic_KO = CRISPR/RNAi/knockout,
+                         — genetic_KO = CRISPR/RNAi/knockout/morpholino,
+                           genetic_OE = overexpression/knock-in,
                            pharmacological = drug/small molecule (CHIR, inhibitors, etc.),
                            none = non-perturbation observation
 }
@@ -102,13 +113,17 @@ NEVER use other key names. NEVER invent observations not in the text."""
 USER_PROMPT_TEMPLATE = """Title: {title}
 Species: {species}
 
+--- METHODS (for timepoint and perturbation context) ---
+{methods}
+
 --- RESULTS ---
 {results}
 
 --- DISCUSSION ---
 {discussion}
 
-Extract all relevant GRN observations as a JSON array."""
+Extract all relevant GRN observations as a JSON array. Pay special attention to
+harvest/collection timepoints in the Methods to set timepoint_h accurately."""
 
 
 # ---------------------------------------------------------------------------
@@ -122,9 +137,11 @@ def truncate_section(text: str, cap: int) -> str:
 
 
 def extract_observations(client: anthropic.Anthropic, paper: dict,
-                         results_text: str, discussion_text: str) -> list[dict]:
+                         results_text: str, discussion_text: str,
+                         methods_text: str = "") -> list[dict]:
     results_trunc    = truncate_section(results_text, RESULTS_CAP)
     discussion_trunc = truncate_section(discussion_text, DISCUSS_CAP)
+    methods_trunc    = truncate_section(methods_text, METHODS_CAP)
 
     if len(results_trunc) + len(discussion_trunc) < 200:
         return []
@@ -132,6 +149,7 @@ def extract_observations(client: anthropic.Anthropic, paper: dict,
     user_msg = USER_PROMPT_TEMPLATE.format(
         title=paper.get("title", ""),
         species=paper.get("species", "unspecified"),
+        methods=methods_trunc or "(not available)",
         results=results_trunc or "(not available)",
         discussion=discussion_trunc or "(not available)",
     )
@@ -225,6 +243,7 @@ def main():
 
         results_text    = ft.get("results", "") or ""
         discussion_text = ft.get("discussion", "") or ""
+        methods_text    = ft.get("methods", "") or ""
 
         if len(results_text) + len(discussion_text) < 200:
             print(f"[{i+1}/{len(ft_files)}] PMID {pmid_str}: no fulltext, skipping")
@@ -232,9 +251,10 @@ def main():
 
         paper = paper_map.get(pmid_str, {"pmid": pmid_str, "title": "", "species": ""})
         print(f"[{i+1}/{len(ft_files)}] PMID {pmid_str}: "
-              f"{len(results_text)+len(discussion_text):,} chars … ", end="", flush=True)
+              f"{len(results_text)+len(discussion_text)+len(methods_text):,} chars … ",
+              end="", flush=True)
 
-        obs = extract_observations(client, paper, results_text, discussion_text)
+        obs = extract_observations(client, paper, results_text, discussion_text, methods_text)
         print(f"{len(obs)} observations")
 
         for o in obs:

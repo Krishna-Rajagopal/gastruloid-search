@@ -13,6 +13,15 @@ SEARCH_QUERIES = [
 YEAR_START = 2014
 YEAR_END   = 2025
 
+MOUSE_EMBRYO_QUERY = (
+    "(mouse embryo[Title/Abstract] OR murine embryo[Title/Abstract] OR "
+    "mouse gastrulation[Title/Abstract] OR murine gastrulation[Title/Abstract]) "
+    "AND (single cell[Title/Abstract] OR scRNA[Title/Abstract] OR "
+    "gene regulatory network[Title/Abstract] OR GRN[Title/Abstract]) "
+    "AND (Nodal[Title/Abstract] OR Wnt[Title/Abstract] OR BMP[Title/Abstract]) "
+    "AND (2014[PDAT]:2026[PDAT])"
+)
+
 # ---------------------------------------------------------------------------
 # Relevance filter
 # A paper passes only if "gastruloid" appears in its title OR

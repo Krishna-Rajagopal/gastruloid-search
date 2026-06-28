@@ -30,6 +30,7 @@ except ImportError:
 PAPERS_CSV       = os.path.join("data", "papers.csv")
 OBSERVATIONS_CSV = os.path.join("data", "observations.csv")
 EXTRACTION_CSV   = os.path.join("data", "extraction_table.csv")
+SCRNA_CSV        = os.path.join("data", "scrna_summary.csv")
 
 _CORE_ENTITIES = {
     "Wnt", "Nodal", "BMP", "BMP4", "FGF", "FGF8", "TBXT", "SOX2", "SOX17",
@@ -61,6 +62,8 @@ def load_papers():
     df["year"] = df["year"].astype(int)
     for col in ["gene_pathways", "phenotypes", "species", "genes_found", "authors"]:
         df[col] = df[col].fillna("")
+    if "dataset" not in df.columns:
+        df["dataset"] = "gastruloid"
     return df
 
 
@@ -480,8 +483,8 @@ with _tcol:
     st.title("Gastruloid Literature Explorer")
     st.caption("Human & murine gastruloid papers on PubMed, 2014–2025.")
 
-tab_papers, tab_grn, tab_obs, tab_ext, tab_curate = st.tabs(
-    ["Papers", "GRN Summary", "Observations", "Culture Conditions", "Curate"]
+tab_papers, tab_grn, tab_obs, tab_ext, tab_curate, tab_scrna = st.tabs(
+    ["Papers", "GRN Summary", "Observations", "Culture Conditions", "Curate", "scRNA"]
 )
 
 
@@ -499,6 +502,8 @@ with tab_papers:
         year_range = st.slider("Year range", year_min, year_max, (year_min, year_max), key="papers_year_range")
         species_options = ["All", "human", "mouse", "both", "mammalian", "unspecified"]
         selected_species = st.selectbox("Species", species_options, key="papers_species")
+        dataset_options = ["All", "gastruloid", "mouse_embryo"]
+        selected_dataset = st.selectbox("Dataset", dataset_options, key="papers_dataset")
         selected_pathways = st.multiselect("Gene / signaling pathway (any match)", options=all_pathways, key="papers_pathways")
         selected_phenotypes = st.multiselect("Phenotype / experimental outcome (any match)", options=all_phenotypes, key="papers_phenotypes")
         keyword_search = st.text_input("Free-text search (title & abstract)",
@@ -509,6 +514,8 @@ with tab_papers:
     filtered = filtered[(filtered["year"] >= year_range[0]) & (filtered["year"] <= year_range[1])]
     if selected_species != "All":
         filtered = filtered[filtered["species"] == selected_species]
+    if selected_dataset != "All":
+        filtered = filtered[filtered["dataset"] == selected_dataset]
     for pathway in selected_pathways:
         filtered = filtered[filtered["gene_pathways"].str.contains(pathway, case=False, na=False)]
     for phenotype in selected_phenotypes:
@@ -1342,3 +1349,62 @@ with tab_curate:
             use_container_width=True,
             height=400,
         )
+
+
+# ============================================================
+# TAB 6 — scRNA VERIFICATION
+# ============================================================
+with tab_scrna:
+    st.header("scRNA Verification")
+    st.caption(
+        "Gene expression across developmental timepoints from single-cell RNA-seq. "
+        "When loaded, use this to cross-validate GRN edges inferred from the literature."
+    )
+
+    if not os.path.exists(SCRNA_CSV):
+        st.info(
+            "No scRNA data loaded yet. Place a gene × timepoint expression matrix at "
+            f"`{SCRNA_CSV}` to enable this tab.\n\n"
+            "Expected format: CSV with a `gene` column and one column per timepoint "
+            "(e.g. `48h`, `72h`, `96h`, `120h`). Values should be normalised expression "
+            "(log-normalised counts or z-scores)."
+        )
+    else:
+        scrna_df = pd.read_csv(SCRNA_CSV, index_col="gene")
+
+        # Filter to GRN genes present in the data
+        grn_genes = [g for g in sorted(_CORE_ENTITIES) if g in scrna_df.index]
+        other_genes = [g for g in scrna_df.index if g not in _CORE_ENTITIES]
+
+        gene_options = grn_genes + other_genes
+        selected_genes = st.multiselect(
+            "Genes to display",
+            options=gene_options,
+            default=grn_genes[:15] if len(grn_genes) >= 15 else grn_genes,
+        )
+
+        if selected_genes and _GRAPH_AVAILABLE:
+            import numpy as np
+            fig, ax = plt.subplots(figsize=(max(6, len(scrna_df.columns) * 1.2),
+                                            max(4, len(selected_genes) * 0.35)))
+            data = scrna_df.loc[selected_genes]
+            # z-score rows for display
+            row_mean = data.mean(axis=1)
+            row_std  = data.std(axis=1).replace(0, 1)
+            data_z   = data.sub(row_mean, axis=0).div(row_std, axis=0)
+
+            im = ax.imshow(data_z.values, aspect="auto", cmap="RdBu_r", vmin=-2, vmax=2)
+            ax.set_xticks(range(len(data_z.columns)))
+            ax.set_xticklabels(data_z.columns, fontsize=8)
+            ax.set_yticks(range(len(selected_genes)))
+            ax.set_yticklabels(selected_genes, fontsize=7)
+            plt.colorbar(im, ax=ax, label="z-score", shrink=0.6)
+            ax.set_title("GRN gene expression by timepoint (z-scored)", fontsize=10)
+            plt.tight_layout()
+            st.pyplot(fig)
+            plt.close(fig)
+
+            with st.expander("Raw expression table"):
+                st.dataframe(scrna_df.loc[selected_genes], use_container_width=True)
+        elif not _GRAPH_AVAILABLE:
+            st.warning("Install matplotlib to enable heatmap: `pip install matplotlib`")
