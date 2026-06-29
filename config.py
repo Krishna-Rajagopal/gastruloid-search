@@ -14,11 +14,12 @@ YEAR_START = 2014
 YEAR_END   = 2025
 
 MOUSE_EMBRYO_QUERY = (
-    "(mouse embryo[Title/Abstract] OR murine embryo[Title/Abstract] OR "
-    "mouse gastrulation[Title/Abstract] OR murine gastrulation[Title/Abstract]) "
-    "AND (single cell[Title/Abstract] OR scRNA[Title/Abstract] OR "
-    "gene regulatory network[Title/Abstract] OR GRN[Title/Abstract]) "
-    "AND (Nodal[Title/Abstract] OR Wnt[Title/Abstract] OR BMP[Title/Abstract]) "
+    "(mouse embryo[Title/Abstract] OR mouse gastrulation[Title/Abstract] OR "
+    "murine gastrulation[Title/Abstract] OR mouse epiblast[Title/Abstract]) "
+    "AND (Nodal[Title/Abstract] OR Wnt[Title/Abstract] OR BMP[Title/Abstract] OR "
+    "FGF[Title/Abstract] OR Brachyury[Title/Abstract] OR TBXT[Title/Abstract] OR "
+    "anterior-posterior[Title/Abstract] OR germ layer[Title/Abstract] OR "
+    "primitive streak[Title/Abstract]) "
     "AND (2014[PDAT]:2026[PDAT])"
 )
 
