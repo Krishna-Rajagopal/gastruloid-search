@@ -33,7 +33,7 @@ EXTRACTION_CSV   = os.path.join("data", "extraction_table.csv")
 SCRNA_CSV        = os.path.join("data", "scrna_summary.csv")
 
 _CORE_ENTITIES = {
-    "Wnt", "Nodal", "BMP", "BMP4", "FGF", "FGF8", "TBXT", "SOX2", "SOX17",
+    "Wnt", "Nodal", "BMP", "FGF", "FGF8", "TBXT", "SOX2", "SOX17",
     "E-cadherin", "N-cadherin", "Retinoic acid", "ROCK signaling",
     "YAP1", "OTX2", "CDX2", "TBX6", "TGF-β", "β-catenin/Wnt",
     "ERK", "NOGGIN", "SMAD2/3", "Snail",

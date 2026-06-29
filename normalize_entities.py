@@ -29,7 +29,7 @@ BACKUP_CSV       = "data/observations_prenorm.csv"
 # Canonical entity names
 # Mapping: raw value → canonical value
 # Conservative: only normalize when the entities are unambiguously the same thing.
-# Retain specificity where it matters (BMP2 ≠ BMP4, FGF2 ≠ FGF).
+# Retain specificity where it matters (FGF2 ≠ FGF); BMP4 → BMP (same pathway).
 # ---------------------------------------------------------------------------
 
 ENTITY_A_MAP = {
@@ -55,7 +55,9 @@ ENTITY_A_MAP = {
 
     # BMP
     "Bmp":                          "BMP",
+    "BMP4":                         "BMP",
     "BMP signaling":                "BMP",
+    "BMP4 signaling":               "BMP",
     "NOG":                          "NOGGIN",
 
     # FGF
@@ -133,7 +135,8 @@ ENTITY_B_MAP = {
     # BMP
     "BMP signaling":                    "BMP",
     "BMP signaling pathway":            "BMP",
-    "BMP4 signaling":                   "BMP4",
+    "BMP4 signaling":                   "BMP",
+    "BMP4":                             "BMP",
 
     # FGF
     "FGF signaling":                    "FGF",
