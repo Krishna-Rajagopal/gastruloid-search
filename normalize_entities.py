@@ -101,47 +101,77 @@ ENTITY_A_MAP = {
 
 ENTITY_B_MAP = {
     # Wnt
-    "WNT signaling competence":     "Wnt",
+    "WNT signaling competence":         "Wnt",
     "Wnt pathway (via Frzb glycosylation)": "Wnt",
-    "Wnt signaling":                "Wnt",
-    "Wnt signaling pathway":        "Wnt",
-    "Wnt/β-catenin pathway":        "Wnt",
+    "Wnt signaling":                    "Wnt",
+    "Wnt signaling pathway":            "Wnt",
+    "Wnt/β-catenin pathway":            "Wnt",
+    "WNT signaling":                    "Wnt",
+    "WNT signaling pathway":            "Wnt",
+    "canonical WNT signaling":          "Wnt",
+    "Wnt activity":                     "Wnt",
+    "Wnt/β-catenin signaling":          "Wnt",
+    "β-catenin signaling":              "β-catenin/Wnt",
 
     # Nodal / TGF-β
-    "NODAL":                        "Nodal",
-    "Nodal expression":             "Nodal",
-    "TGF-β gradient formation":     "TGF-β",
-    "TGF-β signaling":              "TGF-β",
+    "NODAL":                            "Nodal",
+    "Nodal expression":                 "Nodal",
+    "NODAL signaling":                  "Nodal",
+    "Nodal signaling":                  "Nodal",
+    "TGF-β gradient formation":         "TGF-β",
+    "TGF-β signaling":                  "TGF-β",
     "TGF-β signaling response in pluripotent cells": "TGF-β",
-    "Tgfβ/Activin signaling":       "TGF-β",
-    "activin signaling":            "TGF-β",
-    "SMAD2/3":                      "SMAD2/3",
-    "SMAD2 signaling":              "SMAD2/3",
+    "Tgfβ/Activin signaling":           "TGF-β",
+    "activin signaling":                "TGF-β",
+    "SMAD2/3":                          "SMAD2/3",
+    "SMAD2 signaling":                  "SMAD2/3",
+    "SMAD2/3 signaling":                "SMAD2/3",
+    "pSMAD1":                           "SMAD2/3",   # BMP downstream, grouped for GRN
+    "SMAD1 phosphorylation":            "SMAD2/3",
+    "SMAD1/SMAD4 signaling":            "SMAD2/3",
 
-    # TBXT
-    "T/Bra expression":             "TBXT",
-    "TBXT differentiation":         "TBXT",
-
-    # ERK
-    "Erk pattern":                  "ERK",
-    "Erk signaling":                "ERK",
-
-    # E-cadherin
-    "E-cadherin/CDH1":              "E-cadherin",
-    "E-cadherin/CDH1 persistence":  "E-cadherin",
-
-    # AP axis (spatial context)
-    "A-P axis formation":           "AP axis",
-    "AP axis formation":            "AP axis",
-
-    # RA
-    "RA signaling":                 "Retinoic acid",
-
-    # Snail
-    "Snail":                        "Snail",
+    # BMP
+    "BMP signaling":                    "BMP",
+    "BMP signaling pathway":            "BMP",
+    "BMP4 signaling":                   "BMP4",
 
     # FGF
-    "FGF8 expression":              "FGF8",
+    "FGF signaling":                    "FGF",
+    "FGF8 expression":                  "FGF8",
+
+    # TBXT / Brachyury
+    "T/Bra expression":                 "TBXT",
+    "TBXT differentiation":             "TBXT",
+    "TBXT (Brachyury)":                 "TBXT",
+    "T/BRA expression":                 "TBXT",
+    "Brachyury":                        "TBXT",
+    "Brachyury expression":             "TBXT",
+
+    # ERK
+    "Erk pattern":                      "ERK",
+    "Erk signaling":                    "ERK",
+
+    # E-cadherin
+    "E-cadherin/CDH1":                  "E-cadherin",
+    "E-cadherin/CDH1 persistence":      "E-cadherin",
+    "E-cadherin-mediated cell contacts":"E-cadherin",
+
+    # OTX2
+    "OTX2 expression":                  "OTX2",
+
+    # SOX2
+    "Sox2":                             "SOX2",
+    "SOX2 expression":                  "SOX2",
+
+    # AP axis (spatial context — not a molecular entity, keep as-is)
+    "A-P axis formation":               "AP axis",
+    "AP axis formation":                "AP axis",
+
+    # RA
+    "RA signaling":                     "Retinoic acid",
+
+    # Snail
+    "Snail":                            "Snail",
 }
 
 # ---------------------------------------------------------------------------
