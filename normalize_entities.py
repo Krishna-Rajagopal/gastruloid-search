@@ -41,11 +41,20 @@ ENTITY_A_MAP = {
     "Wnt pathway activator":        "Wnt",
     "Wnt signaling":                "Wnt",
     "Wnt signaling memory":         "Wnt",
+    "Wnt/β-catenin":                "Wnt",
+    "Wnt/β-catenin signaling":      "Wnt",
+    "Wnt/β-catenin signalling":     "Wnt",
+    "WNT/β-catenin signaling":      "Wnt",
+    "Wnt/beta-catenin":             "Wnt",
     "β-catenin":                    "β-catenin/Wnt",  # downstream effector, keep near-but-distinct
     # WNT and BMP4 is a combination — keep as-is
 
     # Nodal / TGF-β
     "NODAL":                        "Nodal",
+    "Nodal signaling":              "Nodal",
+    "NODAL signaling":              "Nodal",
+    "Activin/Nodal signaling":      "Nodal",
+    "Nodal/Activin":                "Nodal",
     "TGF-beta":                     "TGF-β",
     "TGF-beta ligands":             "TGF-β",
     "TGF-beta ligands followed by FGF and VEGF": "TGF-β",
@@ -62,16 +71,24 @@ ENTITY_A_MAP = {
 
     # FGF
     "FGF signalling":               "FGF",
+    "FGF signaling":                "FGF",
+    "FGF/ERK signaling":            "FGF",
     "Fgf":                          "FGF",
+    "FGF4":                         "FGF",
+    "FGF2":                         "FGF",
 
     # ERK / MAPK
     "Erk phosphorylation":          "ERK",
     "Erk signaling":                "ERK",
+    "ERK signaling":                "ERK",
+    "MAPK/ERK":                     "ERK",
 
     # TBXT / Brachyury
     "T/Bra":                        "TBXT",
     "TBXT dosage reduction":        "TBXT",
     "TBXT dose":                    "TBXT",
+    "Brachyury":                    "TBXT",
+    "T":                            "TBXT",
 
     # E-cadherin
     "E-CADHERIN":                   "E-cadherin",
@@ -93,9 +110,36 @@ ENTITY_A_MAP = {
     # EMT / Snail family
     "Snai1":                        "Snail",
     "Snail/Slug/Twist":             "Snail",
+    "Snail1":                       "Snail",
 
     # ROCK / Rho
     "Rho kinase pathway":           "ROCK signaling",
+
+    # YAP1
+    "YAP":                          "YAP1",
+    "Yap1":                         "YAP1",
+    "YAP/TAZ":                      "YAP1",
+
+    # CDX2
+    "Cdx2":                         "CDX2",
+
+    # SOX2
+    "Sox2":                         "SOX2",
+
+    # SOX17
+    "Sox17":                        "SOX17",
+
+    # OTX2
+    "Otx2":                         "OTX2",
+
+    # NOGGIN
+    "Noggin":                       "NOGGIN",
+    "noggin":                       "NOGGIN",
+
+    # SMAD2/3
+    "Smad2/3":                      "SMAD2/3",
+    "SMAD2":                        "SMAD2/3",
+    "Smad2":                        "SMAD2/3",
 
     # Akt
     "Akt phosphorylation":          "Akt signaling",
@@ -104,6 +148,12 @@ ENTITY_A_MAP = {
 ENTITY_B_MAP = {
     # Wnt
     "WNT signaling competence":         "Wnt",
+    "Wnt/β-catenin":                    "Wnt",
+    "Wnt/β-catenin signaling":          "Wnt",
+    "Wnt/β-catenin signalling":         "Wnt",
+    "Wnt/β-catenin signaling pathway":  "Wnt",
+    "WNT/β-catenin signaling":          "Wnt",
+    "β-catenin/Wnt signaling":          "Wnt",
     "Wnt pathway (via Frzb glycosylation)": "Wnt",
     "Wnt signaling":                    "Wnt",
     "Wnt signaling pathway":            "Wnt",
@@ -140,6 +190,10 @@ ENTITY_B_MAP = {
 
     # FGF
     "FGF signaling":                    "FGF",
+    "FGF signalling":                   "FGF",
+    "FGF4":                             "FGF",
+    "FGF2":                             "FGF",
+    "Fgf8":                             "FGF8",
     "FGF8 expression":                  "FGF8",
 
     # TBXT / Brachyury
@@ -175,6 +229,51 @@ ENTITY_B_MAP = {
 
     # Snail
     "Snail":                            "Snail",
+    "Snai1":                            "Snail",
+    "Snail1":                           "Snail",
+
+    # YAP1
+    "YAP":                              "YAP1",
+    "Yap1":                             "YAP1",
+    "YAP/TAZ":                          "YAP1",
+
+    # CDX2
+    "Cdx2":                             "CDX2",
+
+    # SOX2
+    "Sox2":                             "SOX2",
+
+    # SOX17
+    "Sox17":                            "SOX17",
+
+    # OTX2
+    "Otx2":                             "OTX2",
+
+    # NOGGIN
+    "Noggin":                           "NOGGIN",
+    "noggin":                           "NOGGIN",
+
+    # SMAD2/3
+    "Smad2/3":                          "SMAD2/3",
+    "SMAD2":                            "SMAD2/3",
+    "Smad2":                            "SMAD2/3",
+    "p-SMAD2/3":                        "SMAD2/3",
+
+    # TGF-β
+    "TGFβ signaling":                   "TGF-β",
+    "TGFβ signaling pathway":           "TGF-β",
+    "TGF-β signaling pathway":          "TGF-β",
+    "TGFbeta signaling":                "TGF-β",
+
+    # ERK
+    "ERK signaling":                    "ERK",
+    "MAPK/ERK":                         "ERK",
+    "Erk":                              "ERK",
+
+    # TBXT
+    "Brachyury":                        "TBXT",
+    "T/Bra":                            "TBXT",
+    "T":                                "TBXT",
 }
 
 # ---------------------------------------------------------------------------
