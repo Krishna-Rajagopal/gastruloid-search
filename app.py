@@ -114,6 +114,10 @@ def load_observations():
         df["perturbation_type"] = "none"
     else:
         df["perturbation_type"] = df["perturbation_type"].fillna("none").astype(str)
+    if "dataset" not in df.columns:
+        df["dataset"] = "gastruloid"
+    else:
+        df["dataset"] = df["dataset"].fillna("gastruloid").astype(str)
     return df
 
 
@@ -697,27 +701,31 @@ with tab_grn:
         odf = obs_df.copy()
 
         # ── Compact filter row ────────────────────────────────────────────────
-        _fc1, _fc2, _fc3, _fc4, _fc5 = st.columns([2, 2, 2, 2, 2])
-        grn_species  = _fc1.selectbox("Species",
+        _fc1, _fc2, _fc3, _fc4, _fc5, _fc6 = st.columns([2, 2, 2, 2, 2, 2])
+        grn_dataset  = _fc1.selectbox("Dataset",
+                                       ["All", "gastruloid", "mouse_embryo"],
+                                       key="grn_dataset")
+        grn_species  = _fc2.selectbox("Species",
                                        ["All", "human", "mouse", "both", "mammalian"],
                                        key="grn_species")
-        grn_obs_type = _fc2.selectbox("Obs type",
+        grn_obs_type = _fc3.selectbox("Obs type",
                                        ["All", "perturbation", "grn_edge",
                                         "spatial_pattern", "expression_timing"],
                                        key="grn_obs_type")
-        grn_tier = _fc3.selectbox(
+        grn_tier = _fc4.selectbox(
             "Evidence tier",
             ["All", "Tier 2 — All perturbation", "Tier 1 — Genetic"],
             key="grn_tier",
         )
-        grn_timepoint = _fc4.selectbox(
+        grn_timepoint = _fc5.selectbox(
             "Timepoint",
             ["All", "≤48h", "48–72h", "72–96h", "≥96h", "not specified"],
             key="grn_timepoint",
         )
-        net_min_papers = _fc5.slider("Min papers/edge", 1, 4, 1, key="net_min_papers")
+        net_min_papers = _fc6.slider("Min papers/edge", 1, 4, 1, key="net_min_papers")
 
         grn_df = odf.copy()
+        if grn_dataset  != "All": grn_df = grn_df[grn_df["dataset"] == grn_dataset]
         if grn_species  != "All": grn_df = grn_df[grn_df["species"] == grn_species]
         if grn_obs_type != "All": grn_df = grn_df[grn_df["observation_type"] == grn_obs_type]
 
@@ -750,9 +758,9 @@ with tab_grn:
             st.info("Install dependencies to enable: `pip install networkx matplotlib`")
         else:
             G_lit, sp_cov = _build_lit_grn(
-                odf,
-                species_filter=grn_species,
-                obs_type_filter=grn_obs_type,
+                grn_df,
+                species_filter="All",
+                obs_type_filter="All",
                 min_papers=net_min_papers,
                 timepoint_filter=grn_timepoint,
                 tier=grn_tier,
